@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -32,6 +32,7 @@ namespace ieeeXploreDownloader
         int proxyPort;
         string proxyUsername;
         string proxyPassword;
+        string articleTitle;
         string saveLocation;
         public void updateVariables() // This function will update variables from program settings
         {
@@ -79,6 +80,7 @@ namespace ieeeXploreDownloader
 
         private void button2_Click(object sender, EventArgs e) // Main download code
         {
+            if (textBox5.Text.All(Char.IsNumber)){
 
             toolStripStatusLabel2.Text = "Downloading!";
             statusStrip1.Update();
@@ -91,6 +93,10 @@ namespace ieeeXploreDownloader
             {
                 fileSaveName = textBox5.Text;
             }
+            
+            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()); // Check file name
+            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            fileSaveName = r.Replace(articleTitle, "");
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(link + textBox5.Text); // Create first request
             if (checkBox1.Checked) // Check Use Proxy setting
             {
@@ -168,6 +174,10 @@ namespace ieeeXploreDownloader
             }
             toolStripStatusLabel2.Text = "Downloaded!"; // Status update
             statusStrip1.Update();
+            }
+            else{
+                MessageBox.Show("Article Number is Wrong!","Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -188,7 +198,7 @@ namespace ieeeXploreDownloader
 
             string data3 = readStream.ReadToEnd();
             Match DescriptionMatch = Regex.Match(data3, "<meta name=\"citation_title\" content=\"([^<]*)\">", RegexOptions.IgnoreCase | RegexOptions.Multiline); // Find title from meta data called cititation_title
-            string articleTitle = DescriptionMatch.Groups[1].Value;
+            articleTitle = DescriptionMatch.Groups[1].Value;
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
             articleTitle = r.Replace(articleTitle, "");
@@ -214,7 +224,6 @@ namespace ieeeXploreDownloader
             textBox4.Text = Properties.Settings.Default["proxyPassword"].ToString();
             textBox6.Text = Properties.Settings.Default["saveLocation"].ToString();
         }
-
 
     }
 }
