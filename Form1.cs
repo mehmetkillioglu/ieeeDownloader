@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -191,7 +191,7 @@ namespace ieeeXploreDownloader
             statusStrip1.Update();
             }
             else{
-                MessageBox.Show("Article Number is Wrong!","Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show("Article number is not valid!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -199,7 +199,7 @@ namespace ieeeXploreDownloader
         {
             if (textBox6.Text == "")
             {
-                MessageBox.Show("Save Location is Wrong!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Save location is not valid!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
@@ -215,27 +215,37 @@ namespace ieeeXploreDownloader
         }
         private void button5_Click(object sender, EventArgs e) // Get Article Title
         {
-            findArticleNumber();
-            toolStripStatusLabel2.Text = "Getting Title!";
-            statusStrip1.Update();
-            updateVariables();
-            HttpWebRequest request3 = (HttpWebRequest)WebRequest.Create(link2 + textBox5.Text); // Create request to article details page
-            HttpWebResponse myHttpWebResponse3 = (HttpWebResponse)request3.GetResponse(); // Get Response
-            Stream receiveStream = myHttpWebResponse3.GetResponseStream();
-            StreamReader readStream = null;
-            readStream = new StreamReader(receiveStream, Encoding.GetEncoding(myHttpWebResponse3.CharacterSet)); // Read stream
+            if (textBox8.Text != "" && textBox5.Text == "")
+            {
+                findArticleNumber();
+            }
+            if (textBox5.Text != "")
+            {
+                toolStripStatusLabel2.Text = "Getting Title!";
+                statusStrip1.Update();
+                updateVariables();
+                HttpWebRequest request3 = (HttpWebRequest)WebRequest.Create(link2 + textBox5.Text); // Create request to article details page
+                HttpWebResponse myHttpWebResponse3 = (HttpWebResponse)request3.GetResponse(); // Get Response
+                Stream receiveStream = myHttpWebResponse3.GetResponseStream();
+                StreamReader readStream = null;
+                readStream = new StreamReader(receiveStream, Encoding.GetEncoding(myHttpWebResponse3.CharacterSet)); // Read stream
 
-            string data3 = readStream.ReadToEnd();
-            Match DescriptionMatch = Regex.Match(data3, "<meta name=\"citation_title\" content=\"([^<]*)\">", RegexOptions.IgnoreCase | RegexOptions.Multiline); // Find title from meta data called cititation_title
-            articleTitle = DescriptionMatch.Groups[1].Value;
-            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            articleTitle = r.Replace(articleTitle, "");
+                string data3 = readStream.ReadToEnd();
+                Match DescriptionMatch = Regex.Match(data3, "<meta name=\"citation_title\" content=\"([^<]*)\">", RegexOptions.IgnoreCase | RegexOptions.Multiline); // Find title from meta data called cititation_title
+                articleTitle = DescriptionMatch.Groups[1].Value;
+                string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+                articleTitle = r.Replace(articleTitle, "");
 
-            textBox7.Text = articleTitle;
-            checkBox2.Checked = true;
-            toolStripStatusLabel2.Text = "Ready!";
-            statusStrip1.Update();
+                textBox7.Text = articleTitle;
+                checkBox2.Checked = true;
+                toolStripStatusLabel2.Text = "Ready!";
+                statusStrip1.Update();
+            }
+            else
+            {
+                MessageBox.Show("Article number is not valid!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void button6_Click(object sender, EventArgs e)
