@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Web;
 
 
 // Coded by Mehmet Kıllıoğlu
@@ -61,7 +62,7 @@ namespace ieeeXploreDownloader
             textBox1.Text.Trim();
             textBox2.Text.Trim();
             updateVariables();
-            toolStripStatusLabel2.Text = "Waiting...";
+            toolStripStatusLabel2.Text = "Ready...";
             statusStrip1.Update();
         }
 
@@ -206,9 +207,15 @@ namespace ieeeXploreDownloader
             }
 
         }
-
+        public void findArticleNumber()
+        {
+            Uri myUri = new Uri(textBox8.Text);
+            int param1 = Int32.Parse((HttpUtility.ParseQueryString(myUri.Query).Get("arnumber")));
+            textBox5.Text = param1.ToString();
+        }
         private void button5_Click(object sender, EventArgs e) // Get Article Title
         {
+            findArticleNumber();
             toolStripStatusLabel2.Text = "Getting Title!";
             statusStrip1.Update();
             updateVariables();
@@ -227,6 +234,8 @@ namespace ieeeXploreDownloader
 
             textBox7.Text = articleTitle;
             checkBox2.Checked = true;
+            toolStripStatusLabel2.Text = "Ready!";
+            statusStrip1.Update();
         }
 
         private void button6_Click(object sender, EventArgs e)
