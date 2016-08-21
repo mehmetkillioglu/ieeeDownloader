@@ -209,16 +209,16 @@ namespace ieeeXploreDownloader
         }
         public void findArticleNumber()
         {
-            Uri myUri = new Uri(textBox8.Text);
-            int param1 = Int32.Parse((HttpUtility.ParseQueryString(myUri.Query).Get("arnumber")));
-            textBox5.Text = param1.ToString();
+            if (textBox8.Text != "")
+            {
+                Uri myUri = new Uri(textBox8.Text);
+                int param1 = Int32.Parse((HttpUtility.ParseQueryString(myUri.Query).Get("arnumber")));
+                textBox5.Text = param1.ToString();
+            }
         }
         private void button5_Click(object sender, EventArgs e) // Get Article Title
         {
-            if (textBox8.Text != "" && textBox5.Text == "")
-            {
-                findArticleNumber();
-            }
+            findArticleNumber();
             if (textBox5.Text != "")
             {
                 toolStripStatusLabel2.Text = "Getting Title!";
