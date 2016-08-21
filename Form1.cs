@@ -36,19 +36,30 @@ namespace ieeeXploreDownloader
         string saveLocation;
         public void updateVariables() // This function will update variables from program settings
         {
-            proxyLink = Properties.Settings.Default["proxyLink"].ToString();
-            proxyPort = Int32.Parse(Properties.Settings.Default["proxyPort"].ToString());
-            proxyUsername = Properties.Settings.Default["proxyUsername"].ToString();
-            proxyPassword = Properties.Settings.Default["proxyPassword"].ToString();
-            saveLocation = Properties.Settings.Default["saveLocation"].ToString(); 
+                proxyLink = textBox1.Text;
+                proxyPort = Int32.Parse(textBox2.Text);
+                proxyUsername = textBox3.Text;
+                proxyPassword = textBox4.Text;
+                saveLocation = textBox6.Text;
+                if (checkBox2.Checked) // If checked, file name will be %articleTitle%.pdf, otherwise %articleNumber%.pdf
+                {
+                    fileSaveName = textBox7.Text;
+                }
+                else
+                {
+                    fileSaveName = textBox5.Text;
+                }
         }
         private void Form1_Load(object sender, EventArgs e) // Update textboxes from program settings
         {
+            
             textBox1.Text = Properties.Settings.Default["proxyLink"].ToString();
             textBox2.Text = Properties.Settings.Default["proxyPort"].ToString();
             textBox3.Text = Properties.Settings.Default["proxyUsername"].ToString();
             textBox4.Text = Properties.Settings.Default["proxyPassword"].ToString();
             textBox6.Text = Properties.Settings.Default["saveLocation"].ToString();
+            textBox1.Text.Trim();
+            textBox2.Text.Trim();
             updateVariables();
             toolStripStatusLabel2.Text = "Waiting...";
             statusStrip1.Update();
@@ -56,8 +67,8 @@ namespace ieeeXploreDownloader
 
         private void button3_Click(object sender, EventArgs e) // Save textbox changes to program settings
         {
-            Properties.Settings.Default["proxyLink"] = textBox1.Text;
-            Properties.Settings.Default["proxyPort"] = Int32.Parse(textBox2.Text);
+            Properties.Settings.Default["proxyLink"] = textBox1.Text.Trim();
+            Properties.Settings.Default["proxyPort"] = Int32.Parse(textBox2.Text.Trim());
             Properties.Settings.Default["proxyUsername"] = textBox3.Text;
             Properties.Settings.Default["proxyPassword"] = textBox4.Text;
             Properties.Settings.Default["saveLocation"] = textBox6.Text;
@@ -77,27 +88,30 @@ namespace ieeeXploreDownloader
                 textBox6.Text = folderName.ToString(); // Update textbox
             }
         }
-
+        HttpWebResponse myHttpWebResponse;
+        HttpWebResponse myHttpWebResponse2;
+        HttpWebRequest request;
+        HttpWebRequest request2;
+        Stream remoteStream = null;
+        Stream localStream = null;
         private void button2_Click(object sender, EventArgs e) // Main download code
         {
+
+            if (myHttpWebResponse != null) myHttpWebResponse.Close(); // Clear 
+            if (myHttpWebResponse2 != null) myHttpWebResponse2.Close();
+            if (remoteStream != null) remoteStream.Close();
+            if (localStream != null) localStream.Close();
             if (textBox5.Text.All(Char.IsNumber)){
 
             toolStripStatusLabel2.Text = "Downloading!";
             statusStrip1.Update();
             updateVariables();
-            if (checkBox2.Checked) // If checked, file name will be %articleTitle%.pdf, otherwise %articleNumber%.pdf
-            {
-                fileSaveName = textBox7.Text;
-            }
-            else
-            {
-                fileSaveName = textBox5.Text;
-            }
+            
             
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()); // Check file name
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            fileSaveName = r.Replace(articleTitle, "");
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(link + textBox5.Text); // Create first request
+            fileSaveName = r.Replace(fileSaveName, "");
+            request = (HttpWebRequest)WebRequest.Create(link + textBox5.Text); // Create first request
             if (checkBox1.Checked) // Check Use Proxy setting
             {
             var proxyURI = new Uri(string.Format("{0}:{1}", proxyLink, proxyPort));
@@ -109,7 +123,7 @@ namespace ieeeXploreDownloader
             request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"; // Header info
             CookieContainer myCookies = new CookieContainer(); // IEEE Xplore uses cookies to access pdf
             request.CookieContainer = myCookies;
-            HttpWebResponse myHttpWebResponse = (HttpWebResponse)request.GetResponse(); // Get response
+            myHttpWebResponse = (HttpWebResponse)request.GetResponse(); // Get response
             Stream receiveStream = myHttpWebResponse.GetResponseStream();
             StreamReader readStream = null;
             readStream = new StreamReader(receiveStream, Encoding.GetEncoding(myHttpWebResponse.CharacterSet)); // Read response to stream
@@ -129,7 +143,7 @@ namespace ieeeXploreDownloader
             int linkCount = list.Count;
             String pdfLink = list[linkCount - 1].ToString(); // Save PDF link 
 
-            HttpWebRequest request2 = (HttpWebRequest)WebRequest.Create(pdfLink); // This request will end up with PDF File
+            request2 = (HttpWebRequest)WebRequest.Create(pdfLink); // This request will end up with PDF File
             request2.AllowAutoRedirect = true; // This is required because ieee Xplore redirects itself
             if (checkBox1.Checked) // Check Use Proxy setting
             {
@@ -140,9 +154,9 @@ namespace ieeeXploreDownloader
             }
             request2.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
             request2.CookieContainer = myCookies;
-            HttpWebResponse myHttpWebResponse2 = (HttpWebResponse)request2.GetResponse();
-            Stream remoteStream = null;
-            Stream localStream = null;
+            myHttpWebResponse2 = (HttpWebResponse)request2.GetResponse();
+            remoteStream = null;
+            localStream = null;
             int bytesProcessed = 0;
             var fileName = saveLocation + "/" + fileSaveName + ".pdf"; // Set file path 
             try
@@ -182,7 +196,15 @@ namespace ieeeXploreDownloader
 
         private void button4_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(@saveLocation); // Open save location in Explorer
+            if (textBox6.Text == "")
+            {
+                MessageBox.Show("Save Location is Wrong!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(@textBox6.Text); // Open save location in Explorer
+            }
+
         }
 
         private void button5_Click(object sender, EventArgs e) // Get Article Title
@@ -215,14 +237,16 @@ namespace ieeeXploreDownloader
             Properties.Settings.Default["proxyPassword"] = "";
             Properties.Settings.Default["saveLocation"] = "";
             Properties.Settings.Default.Save();
+            textBox1.Text = "";
+            textBox2.Text = "";
+            textBox3.Text = "";
+            textBox4.Text = "";
+            textBox5.Text = "";
+            textBox6.Text = "";
+            textBox7.Text = "";
             updateVariables();
             toolStripStatusLabel2.Text = "Settings Cleared!";
             statusStrip1.Update();
-            textBox1.Text = Properties.Settings.Default["proxyLink"].ToString();
-            textBox2.Text = Properties.Settings.Default["proxyPort"].ToString();
-            textBox3.Text = Properties.Settings.Default["proxyUsername"].ToString();
-            textBox4.Text = Properties.Settings.Default["proxyPassword"].ToString();
-            textBox6.Text = Properties.Settings.Default["saveLocation"].ToString();
         }
 
     }
