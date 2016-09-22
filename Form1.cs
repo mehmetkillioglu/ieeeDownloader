@@ -231,12 +231,13 @@ namespace ieeeXploreDownloader
                 readStream = new StreamReader(receiveStream, Encoding.GetEncoding(myHttpWebResponse3.CharacterSet)); // Read stream
 
                 string data3 = readStream.ReadToEnd();
-                Match DescriptionMatch = Regex.Match(data3, "<meta name=\"citation_title\" content=\"([^<]*)\">", RegexOptions.IgnoreCase | RegexOptions.Multiline); // Find title from meta data called cititation_title
+                /*Match DescriptionMatch = Regex.Match(data3, "<meta name=\"citation_title\" content=\"([^<]*)\">", RegexOptions.IgnoreCase | RegexOptions.Multiline); // Find title from meta data called cititation_title
                 articleTitle = DescriptionMatch.Groups[1].Value;
                 string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
                 Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-                articleTitle = r.Replace(articleTitle, "");
-
+                articleTitle = r.Replace(articleTitle, "");*/
+                string articleTitle = Regex.Match(data3, @"\<title\b[^>]*\>\s*(?<Title>[\s\S]*?)\</title\>", RegexOptions.IgnoreCase).Groups["Title"].Value;
+                articleTitle = articleTitle.Substring(23, articleTitle.Length-23);
                 textBox7.Text = articleTitle;
                 checkBox2.Checked = true;
                 toolStripStatusLabel2.Text = "Ready!";
